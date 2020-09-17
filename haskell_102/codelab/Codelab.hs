@@ -388,10 +388,10 @@ countScore c1 c2 = Score {scoreBlack = black, scoreWhite = white}
 allCodesDo :: Int -> [Code]
 allCodesDo s
   | s <  0    = error "allCodes: size was lower than 0"
-  | s == 0    = codelab
-  | otherwise = do color <- codelab
-                   code <- codelab
-                   return codelab
+  | s == 0    = [[]]
+  | otherwise = do color <- allColors
+                   code <- allCodesDo $ s - 1
+                   return $ color : code
 
 -- [5.2]
 -- Unlike generators, a "do" block can return any wrapped value.  For
@@ -404,8 +404,9 @@ allCodesDo s
 
 duplicatesList :: Int -> [Int]
 duplicatesList len =
-  do i <- [1..codelab]
-     codelab
+   do i <- [1..len]
+      l <- take 2 $ repeat i
+      return l
 
 -- [5.3] What if we want the different "blocks" to have different
 -- lengths? Let's build a "generator" similar to the previous one, but
@@ -424,7 +425,9 @@ duplicatesList len =
 
 oddlyDuplicateList :: Int -> [Int]
 oddlyDuplicateList len =
-  do codelab
+   do i <- [1..len]
+      l <- take (mod i 2 + 1) $ repeat i
+      return l
 
 -- When you solve [5.3], think about the fact that when coding in "do"
 -- notation you have the full power of the language, but you are building
