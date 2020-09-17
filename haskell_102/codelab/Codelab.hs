@@ -159,7 +159,7 @@ getCount color cmap = getIntOr0 $ lookup color cmap
 -- For a fancier version, you can look up "insertWith".
 
 addColorToMap :: Color -> ColorMap -> ColorMap
-addColorToMap color cmap = insert color (getCount color cmap + 1) cmap
+addColorToMap color cmap = insertWith (+) color 1 cmap
 
 
 
