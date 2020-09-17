@@ -84,23 +84,23 @@ codelab = error "SOMETHING IS NOT IMPLEMENTED!"
 -}
 
 add :: Int -> Int -> Int
-add x y = codelab
+add x y = x + y
 
 subtract :: Int -> Int -> Int
-subtract x y = codelab
+subtract x y = x - y
 
 double :: Int -> Int
-double x = codelab
+double x = x + x
 
 multiply :: Int -> Int -> Int
-multiply x y = codelab
+multiply x y = x * y
 
 -- Note that Haskell is strict about types even for basic integral types.
 -- Int is never automatically converted to Double.  But you can use
 -- fromIntegral to convert from any integral type to any number type.
 
 divide :: Int -> Int -> Double
-divide x y = codelab
+divide x y = fromIntegral x / fromIntegral y
 
 -- Remember that you can use if/then/else:
 --
@@ -111,7 +111,7 @@ divide x y = codelab
 -- even relatively small numbers.
 
 factorial :: Integer -> Integer
-factorial n = codelab
+factorial n = if n == 1 then 1 else n * factorial (n - 1)
 
 -- Expressions can be assigned names, called "bindings", using the
 -- following syntax:
@@ -125,7 +125,9 @@ factorial n = codelab
 --   https://en.wikipedia.org/wiki/Greatest_common_divisor#Using_Euclid's_algorithm
 
 gcd :: Int -> Int -> Int
-gcd a b = codelab
+gcd a b = if a == b then a
+   else if a > b then gcd (a - b) b
+   else gcd a (b - a)
 
 
 
@@ -150,7 +152,7 @@ data Minutes = Minutes Int
 --     div a b
 
 hours :: Minutes -> Int
-hours m = codelab
+hours (Minutes m) = div m 60
 
 -- In case you need some mathematical functions, you can use
 --
@@ -163,7 +165,7 @@ hours m = codelab
 -- example, for 15 and 25, distance is 10.
 
 timeDistance :: Minutes -> Minutes -> Minutes
-timeDistance m1 m2 = codelab
+timeDistance (Minutes m1) (Minutes m2) =  Minutes $ abs $ m2 - m1
 
 type Point = (Int, Int)
 
@@ -179,7 +181,9 @@ type Point = (Int, Int)
 --     f (x, y) = abs x + abs y
 
 pointDistance :: Point -> Point -> Double
-pointDistance p1 p2 = codelab
+pointDistance (x1, y1) (x2, y2) = sqrt
+   $ fromIntegral
+   $ (x1-x2)^2 +(y1-y2)^2
 
 
 {- #####################################################################
@@ -198,8 +202,8 @@ pointDistance p1 p2 = codelab
 -- null tells you whether a list is empty or not
 
 null :: [a] -> Bool
-null fixme = codelab
-
+null [] = True
+null _ = False
 
 -- head returns the first element of the list.
 --
@@ -207,14 +211,15 @@ null fixme = codelab
 
 head :: [a] -> a
 head []    = error "head: empty list"
-head fixme = codelab
+head (x:_) = x
 
 
 -- tail returns everything but the first element.
 -- If the list is empty it panics
 
 tail :: [a] -> [a]
-tail = codelab
+tail []     = error "tail: empty list"
+tail (_:xs) = xs
 
 
 
@@ -232,28 +237,37 @@ tail = codelab
 -- Do you remember it from the slides?
 
 length :: [a] -> Int
-length l = codelab
+length []      = 0
+length (x:xs)  = length xs + 1
 
+lengthF = foldl (\x _ -> x + 1) 0
 
 -- "and" returns True if all the boolean values in the list are True.
 -- What do you think it returns for an empty list?
 
 and :: [Bool] -> Bool
-and l = codelab
+and []         = True
+and (x:xs)     = x && and xs
 
+andF = foldl (&&) True
 
 -- "or" returns True if at least one value in the list is True.
 -- What do you think it returns for an empty list?
 
 or :: [Bool] -> Bool
-or l = codelab
+or []       = False
+or (x:xs)   = x || or xs
 
+orF = foldl (||) False
 
 -- "(++)" is the concatenation operator.  To concatenate two linked lists
 -- you have to chain the second one at the end of the first one.
 
 (++) :: [a] -> [a] -> [a]
-l1 ++ l2 = codelab
+[] ++ l2 = l2
+(x:xs) ++ l2 = x : xs ++ l2
+
+l1 +++ l2 = foldr (:) l2 l1
 
 
 
@@ -284,8 +298,8 @@ l1 ++ l2 = codelab
 -- You probably remember this one?  Nothing extraordinary here.
 
 map :: (a -> b) -> [a] -> [b]
-map _ []     = codelab
-map f (a:as) = codelab
+map _ []     = []
+map f (a:as) = f a : map f as
 
 
 -- Same thing here for filter, except that we use it to introduce a new
@@ -301,26 +315,26 @@ map f (a:as) = codelab
 --     | otherwise =  x
 
 filter :: (a -> Bool) -> [a] -> [a]
-filter _ [] = codelab
+filter _ [] = []
 filter f (x:xs)
-  | codelab   = codelab
-  | otherwise = codelab
+  | f x        = x : filter f xs
+  | otherwise  = filter f xs
 
 
 -- foldl
 -- foldl (-) 0 [1,2,3,4]   ==   (((0 - 1) - 2) - 3) - 4   ==   -10
 
 foldl :: (a -> x -> a) -> a -> [x] -> a
-foldl _ a []     = codelab
-foldl f a (x:xs) = codelab
+foldl _ a []     = a
+foldl f a (x:xs) = foldl f (f a x) xs
 
 
 -- foldr
 -- foldr (-) 0 [1,2,3,4]   ==   1 - (2 - (3 - (4 - 0)))   ==    -2
 
 foldr :: (x -> a -> a) -> a -> [x] -> a
-foldr _ a []     = codelab
-foldr f a (x:xs) = codelab
+foldr _ a []     = a
+foldr f a (x:xs) = f x $ foldr f a xs
 
 
 
@@ -380,21 +394,23 @@ foldr f a (x:xs) = codelab
 -- If we were to fix the "head" function, how could we do that?
 
 safeHead :: [a] -> Maybe a
-safeHead []    = codelab
-safeHead (x:_) = codelab
+safeHead []    = Nothing
+safeHead (x:_) = Just x
 
 
 -- "isNothing" should not need an explanation by now!
 
 isNothing :: Maybe a -> Bool
-isNothing = codelab
+isNothing (Nothing) = True
+isNothing (Just _) = False
 
 
 -- The "fromMaybe" function is your way out of a Maybe value.
 -- It takes a default value to use in case our Maybe value is Nothing.
 
 fromMaybe :: a -> Maybe a -> a
-fromMaybe _ _ = codelab
+fromMaybe def (Nothing) = def
+fromMaybe _ (Just x) = x
 -- Consider starting with these patterns:
 --
 -- fromMaybe def fixme = codelab
@@ -406,7 +422,8 @@ fromMaybe _ _ = codelab
 -- ...doesn't it kinda look like fold?
 
 maybe :: b -> (a -> b) -> Maybe a -> b
-maybe _ _ _ = codelab
+maybe b _ (Nothing) = b
+maybe _ f (Just a) = f a
 -- Consider starting with these patterns:
 -- maybe b _ fixme = codelab
 -- maybe _ f fixme = codelab
@@ -506,10 +523,10 @@ combine (a1, a2) (b1, b2) = (a1 + b1, a2 + b2)
 --     zip          :: [a] -> [b] -> [(a, b)]
 
 pairScore :: (Hand, Hand) -> Score
-pairScore = codelab codelab
+pairScore (h1, h2) = computeScore h1 h2
 
 score :: [Hand] -> [Hand] -> Score
-score h1 h2 = codelab codelab $ codelab codelab $ codelab h1 h2
+score h1 h2 = foldl1 combine $ map pairScore $ zip h1 h2
 
 -- Hint: It creates a list of plays by merging the two lists,
 --       then it scores each play,
@@ -560,13 +577,15 @@ play = void $ playTurn (0,0)
    do, what they are, without testing them in GHCI?
 -}
 
-
+-- fib? f n = f n-1 + f n-2
 mystic :: [Integer]
 mystic = 0 : 1 : zipWith (+) mystic (tail mystic)
 
+-- all prime number?
 valor :: [Integer]
 valor = let s l = head l : s [n | n <- tail l, n `mod` head l /= 0] in s [2..]
 
+-- quick sort? but by copy?
 instinct :: [Int] -> [Int]
 instinct []     = []
 instinct (x:xs) = instinct [a | a <- xs, a < x] ++ [x] ++ instinct (filter (>= x) xs)
