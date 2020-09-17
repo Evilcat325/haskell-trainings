@@ -201,7 +201,7 @@ data ErrorOr a = Error ErrorMsg -- an error with a message
 -- "wrapValue" takes a value, and puts it in the context of an "ErrorOr a".
 
 wrapValue :: a -> ErrorOr a
-wrapValue = codelab
+wrapValue = Value
 
 
 -- [3.2]
@@ -211,8 +211,8 @@ wrapValue = codelab
 -- pattern match to decide what to do.
 
 fmapValue :: (a -> b) -> ErrorOr a -> ErrorOr b
-fmapValue _ (Error msg) = codelab
-fmapValue f (Value   x) = codelab
+fmapValue _ (Error msg) = Error msg
+fmapValue f (Value   x) = Value $ f x
 
 
 -- [3.3]
@@ -223,8 +223,8 @@ fmapValue f (Value   x) = codelab
 -- a contextual value...
 
 apValue :: ErrorOr (a -> b) -> ErrorOr a -> ErrorOr b
-apValue (Error msg) _   = codelab
-apValue (Value   f) eoa = codelab
+apValue (Error msg) _   = Error msg
+apValue (Value   f) eoa = fmapValue f eoa
 
 
 -- [3.4]
@@ -232,8 +232,8 @@ apValue (Value   f) eoa = codelab
 -- "fmapValue", except we don't have to wrap the result.
 
 bindValue :: (a -> ErrorOr b) -> ErrorOr a -> ErrorOr b
-bindValue _ (Error msg) = codelab
-bindValue f (Value   x) = codelab
+bindValue _ (Error msg) = Error msg
+bindValue f (Value   x) = f x
 
 
 
