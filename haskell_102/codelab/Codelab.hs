@@ -103,8 +103,8 @@ data Color = Red     -- this is a constructor, of type Color
 
 allColors :: [Color]
 allColors = [minColor .. maxColor] -- enumFromTo minColor maxColor
-  where minColor = codelab
-        maxColor = codelab
+  where minColor = minBound
+        maxColor = maxBound
 
 
 
@@ -133,7 +133,7 @@ type ColorMap = Map Color Int
 -- https://hackage.haskell.org/package/base/docs/Data-Maybe.html
 
 getIntOr0 :: Maybe Int -> Int
-getIntOr0 = codelab
+getIntOr0 = fromMaybe 0
 
 
 -- [2.2]
@@ -143,8 +143,9 @@ getIntOr0 = codelab
 --
 --     lookup :: key -> Map key value -> Maybe value
 
+
 getCount :: Color -> ColorMap -> Int
-getCount color cmap = codelab
+getCount color cmap = getIntOr0 $ lookup color cmap
 
 
 -- [2.3]
@@ -158,7 +159,7 @@ getCount color cmap = codelab
 -- For a fancier version, you can look up "insertWith".
 
 addColorToMap :: Color -> ColorMap -> ColorMap
-addColorToMap color cmap = codelab
+addColorToMap color cmap = insert color (getCount color cmap + 1) cmap
 
 
 
