@@ -64,6 +64,7 @@ import Data.List  hiding (lookup, insert)
 import Data.Map   (Map, empty, insert, insertWith, lookup)
 import Data.Maybe
 import Prelude    hiding (lookup)
+import Data.Function (on)
 
 codelab :: a
 codelab = error "SOMETHING IS NOT IMPLEMENTED!"
@@ -144,9 +145,14 @@ getIntOr0 = fromMaybe 0
 --     lookup :: key -> Map key value -> Maybe value
 
 
-getCount :: Color -> ColorMap -> Int
-getCount color cmap = getIntOr0 $ lookup color cmap
 
+(...) :: (c -> d) -> (a -> b -> c) -> a -> b -> d
+(...) f g x = f . (g x)
+
+ -- (...) = (.) . (.)
+
+getCount :: Color -> ColorMap -> Int
+getCount  = getIntOr0 ... lookup
 
 -- [2.3]
 -- Increase the count of a color in the map by 1. Since a map is immutable,
@@ -336,10 +342,11 @@ countBlacks c1 c2 = sum $ map fromEnum $ zipWith (==) c1 c2
 countTotal :: Code -> Code -> Int
 countTotal c1 c2 = sum $ map compareColor allColors
   where compareColor :: Color -> Int
-        compareColor color = min (getCount color cmap1) (getCount color cmap2)
+        compareColor color = (min `on` getCount color) cmap1 cmap2
         cmap1, cmap2 :: ColorMap
         cmap1 = codeToMap c1
         cmap2 = codeToMap c2
+
 
 
 -- [4.5]
